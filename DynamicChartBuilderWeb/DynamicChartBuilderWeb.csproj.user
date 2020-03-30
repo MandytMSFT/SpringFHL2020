@@ -10,6 +10,7 @@
     <UseGlobalApplicationHostFile />
     <LastActiveSolutionConfig>Release|Any CPU</LastActiveSolutionConfig>
     <NameOfLastUsedPublishProfile>DynamicChartBuilderWeb20200329055128 - Web Deploy</NameOfLastUsedPublishProfile>
+    <ProfileToSelectInPublishDialog>DynamicChartBuilderWeb20200329055128 - Web Deploy</ProfileToSelectInPublishDialog>
   </PropertyGroup>
   <ProjectExtensions>
     <VisualStudio>
