@@ -105,7 +105,6 @@ C:\Program Files\Git\SpringFHL2020\DynamicChartBuilderWeb\bin\roslyn\VBCSCompile
 C:\Program Files\Git\SpringFHL2020\DynamicChartBuilderWeb\bin\roslyn\VBCSCompiler.exe.config
 C:\Program Files\Git\SpringFHL2020\DynamicChartBuilderWeb\bin\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll
 C:\Program Files\Git\SpringFHL2020\DynamicChartBuilderWeb\bin\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.xml
-C:\Program Files\Git\SpringFHL2020\DynamicChartBuilderWeb\obj\Release\DynamicChartBuilderWeb.csprojAssemblyReference.cache
 C:\Program Files\Git\SpringFHL2020\DynamicChartBuilderWeb\obj\Release\DynamicChartBuilderWeb.csproj.CoreCompileInputs.cache
 C:\Program Files\Git\SpringFHL2020\DynamicChartBuilderWeb\obj\Release\DynamicChartBuilderWeb.csproj.CopyComplete
 C:\Program Files\Git\SpringFHL2020\DynamicChartBuilderWeb\obj\Release\DynamicChartBuilderWeb.dll

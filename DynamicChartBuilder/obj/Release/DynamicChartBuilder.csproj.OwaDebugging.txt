@@ -1,0 +1,7 @@
+False
+117a5de6-52d9-4997-945d-173eda036ce8d2bedb7d-949d-4ad3-b834-b4f6881778d3
+{0eb55430-69b1-453c-bfab-85220a964fea}{0264a79b-5987-496d-b3f1-6219ae56c24f}
+{33dbdf7f-a6ad-4814-bd31-473c8bdf63f0}
+1.0.0.0
+DynamicChartBuilder
+_layouts/15/

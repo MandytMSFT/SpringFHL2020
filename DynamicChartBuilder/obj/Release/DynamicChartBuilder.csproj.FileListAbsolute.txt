@@ -1,0 +1,1 @@
+C:\Program Files\Git\SpringFHL2020\DynamicChartBuilder\obj\Release\DynamicChartBuilder.csproj.CoreCompileInputs.cache
