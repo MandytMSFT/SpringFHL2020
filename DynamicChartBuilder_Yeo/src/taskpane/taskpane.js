@@ -10,11 +10,12 @@ const chartWidth = 500, chartHeight = 400;
 // const dataTableName = "Table4";
 const countryColumn = "Countries";
 const tempColumnName = "TempColumn";
-const colorList = ["red", "green", "blue", "grey", "yellow", "brown","purple"];
+const colorList = ["#afc97a","#cd7371","#729aca","#b65708","#276a7c","#4d3b62","#5f7530","#772c2a","#2c4d75","#f79646","#4bacc6","#8064a2","#9bbb59","#c0504d","#4f81bd"];
+const fontSize = 20;
 
 Office.onReady(info => {
   if (info.host === Office.HostType.Excel) {
-   // document.getElementById("sideload-msg").style.display = "none";
+    //document.getElementById("sideload-msg").style.display = "none";
     //document.getElementById("app-body").style.display = "flex";
     document.getElementById("createDynamicChart").onclick = CreateDynamicChart;
   }
@@ -53,11 +54,15 @@ export async function CreateDynamicChart() {
       let chart = charts.add(Excel.ChartType.barClustered, tempColumn.getRange());
       chart.height = chartHeight;
       chart.width = chartWidth;
+      chart.title.format.font.set({size: fontSize});
       await context.sync();
+
       let categoryAxis = chart.axes.getItem(Excel.ChartAxisType.category);
       categoryAxis.setCategoryNames(countryRange);
       let series = chart.series.getItemAt(0);
       series.hasDataLabels = true;
+      series.gapWidth = 30;
+      series.dataLabels.showCategoryName = true;
       series.points.load();
       await context.sync();
       console.log(countryRange);
@@ -66,21 +71,19 @@ export async function CreateDynamicChart() {
           series.points.getItemAt(i).format.fill.setSolidColor(colorList[i % colorList.length]);
       }
       await context.sync();
-      //for (let i = columnCount - 1; i > 0; i--) {
+
       for (let i = 1; i < columnCount; i++) {
           let dataRange = columns.getItemAt(i).getDataBodyRange();
           let titleRange = columns.getItemAt(i).getHeaderRowRange();
           titleRange.load("text");
           await context.sync();
-          //series.hasDataLabels = true;
           //chart.title.set({ text: titleRange.text[0][0]});
           chart.title.text = titleRange.text[0][0];
           tempRange.copyFrom(dataRange);
           table.sort.apply([{ key: columnCount, ascending: true }], true);
           await context.sync();
-          sleep(300);
+          sleep(50);
       }
-      //tempColumn.delete();
       await context.sync();
     });
   } catch (error) {
