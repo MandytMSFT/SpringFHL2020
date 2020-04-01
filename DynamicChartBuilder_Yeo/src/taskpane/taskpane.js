@@ -23,11 +23,16 @@ Office.onReady(info => {
 export async function CreateDynamicChart() {
   try {
     await Excel.run(async context => {
-      const dataSheetName = document.getElementById("DataSheetName").value;
-      const dataSheet = context.workbook.worksheets.getItem(dataSheetName);
+      // Find selected table
+      let activeRange = context.workbook.getSelectedRange();
+      let dataTables = activeRange.getTables(false);
+      dataTables.load("items");
+      await context.sync();
 
-      const dataTableName = document.getElementById("TableName").value;
-      let table = dataSheet.tables.getItem(dataTableName);
+      // Get active table
+      let dataTable = dataTables.items[0];
+      let dataSheet = context.workbook.worksheets.getActiveWorksheet();
+      let table = dataSheet.tables.getItem(dataTable.id);
 
       table.load("columns");
       await context.sync();
@@ -66,6 +71,8 @@ export async function CreateDynamicChart() {
           series.points.getItemAt(i).format.fill.setSolidColor(colorList[i % colorList.length]);
       }
       await context.sync();
+
+      let interval = document.getElementById("ChartSpeed").value
       //for (let i = columnCount - 1; i > 0; i--) {
       for (let i = 1; i < columnCount; i++) {
           let dataRange = columns.getItemAt(i).getDataBodyRange();
@@ -78,7 +85,8 @@ export async function CreateDynamicChart() {
           tempRange.copyFrom(dataRange);
           table.sort.apply([{ key: columnCount, ascending: true }], true);
           await context.sync();
-          sleep(300);
+
+          sleep(interval);
       }
       //tempColumn.delete();
       await context.sync();
