@@ -200,6 +200,15 @@ export async function CreateDynamicChart() {
           chart.title.text = titleRange.text[0][0];
           await context.sync();
       }
+
+      colorRange.load("values");
+      series.load("points");
+      await context.sync();
+
+      // Set color again after all done
+      for (let k = 0; k < series.points.count; k++) {
+        series.points.getItemAt(k).format.fill.setSolidColor(colorRange.values[k][0]);
+      }
       await context.sync();
     });
   } catch (error) {
