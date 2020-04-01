@@ -144,11 +144,8 @@ export async function CreateDynamicChart() {
 
       for (let i = 1; i < columnCount; i++) {
           let dataRange = columns.getItemAt(i).getDataBodyRange();
-          let titleRange = columns.getItemAt(i).getHeaderRowRange();
-          titleRange.load("text");
           tempRange.load("values");
           dataRange.load("values");
-          colorRange.load("values");
           increaseRange.clear();
           await context.sync();
 
@@ -161,8 +158,7 @@ export async function CreateDynamicChart() {
           increaseRange.calculate();
           await context.sync();
     
-          increaseRange.load("values");
-          await context.sync();
+
 
           for (let j = 1; j <= splitIncreasement; j++) {
             if (j == splitIncreasement) {
@@ -171,6 +167,9 @@ export async function CreateDynamicChart() {
             }
             else {
               // Add increase amount
+              tempRange.load("values");
+              increaseRange.load("values");
+              await context.sync();
               for (let k = 0; k < tempRange.values.length; k++) {
                 tempRange.getCell(k, 0).values = tempRange.values[k][0] + increaseRange.values[k][0];
               }
@@ -184,6 +183,7 @@ export async function CreateDynamicChart() {
             // Set data points color
             let series = chart.series.getItemAt(0);
             series.load("points");
+            colorRange.load("values");
             await context.sync();
             for (let k = 0; k < series.points.count; k++) {
               series.points.getItemAt(k).format.fill.setSolidColor(colorRange.values[k][0]);
@@ -192,10 +192,14 @@ export async function CreateDynamicChart() {
             //console.log("Current Value:" + tempRange.values);
             await context.sync();
             tempRange.load("values");
-            colorRange.load("values");
             await context.sync();
             sleep(interval);
           }
+
+          
+          let titleRange = columns.getItemAt(i).getHeaderRowRange();
+          titleRange.load("text");
+          await context.sync();
 
           chart.title.text = titleRange.text[0][0];
           await context.sync();
