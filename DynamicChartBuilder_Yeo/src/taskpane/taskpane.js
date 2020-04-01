@@ -14,6 +14,7 @@ const fontSize = 20;
 // Internal used const. DO NOT CHANGE
 const tempColumnName = "TempColumn";
 const increaseColumnName = "IncreaseColumn";
+const colorColumnName = "colorColumn";
 const chartName = "DynamicChart";
 
 let logResult = document.getElementById("consoleText");
@@ -49,6 +50,7 @@ export async function CreateFirstChart() {
       columnCount = columns.count;
       let tempColumn = columns.getItemOrNullObject(tempColumnName);
       let increaseColumn = columns.getItemOrNullObject(increaseColumnName);
+      let colorColumn = columns.getItemOrNullObject(colorColumnName);
       await context.sync();
       if (tempColumn.isNullObject) {
           tempColumn = columns.add(null, null, "TempColumn");
@@ -61,13 +63,20 @@ export async function CreateFirstChart() {
       } else {
         columnCount -= 1;
       }
+      if (colorColumn.isNullObject) {
+        colorColumn = columns.add(null, null, colorColumnName);
+      } else {
+        columnCount -= 1;
+      }
 
       // Get ranges
+      let countryRange = columns.getItemAt(0).getDataBodyRange();
       let tempRange = tempColumn.getDataBodyRange();
       let increaseRange = increaseColumn.getDataBodyRange();
-      let countryRange = columns.getItemAt(0).getDataBodyRange();
+      let colorRange = colorColumn.getDataBodyRange();
       tempRange.clear();
       increaseRange.clear();
+      colorRange.load("values");
       await context.sync();
 
       // Create Chart
@@ -98,9 +107,11 @@ export async function CreateFirstChart() {
 
       // Set data points color
       for (let i = 0; i < series.points.count; i++) {
+          colorRange.getCell(i, 0).values = colorList[i % colorList.length];
           series.points.getItemAt(i).format.fill.setSolidColor(colorList[i % colorList.length]);
+          writeLog(colorList[i % colorList.length]);
       }
-      series.points.load();
+      //series.points.load();
       await context.sync();
     });
   } 
@@ -120,8 +131,10 @@ export async function CreateDynamicChart() {
       let columns = table.columns;
       let tempColumn = columns.getItemOrNullObject(tempColumnName);
       let increaseColumn = columns.getItemOrNullObject(increaseColumnName);
+      let colorColumn = columns.getItemOrNullObject(colorColumnName);
       let tempRange = tempColumn.getDataBodyRange();
       let increaseRange = increaseColumn.getDataBodyRange();
+      let colorRange = colorColumn.getDataBodyRange();
       //tempRange.load("address");
       await context.sync();
       //writeLog("temp range:" + tempRange.address);
@@ -135,6 +148,7 @@ export async function CreateDynamicChart() {
           titleRange.load("text");
           tempRange.load("values");
           dataRange.load("values");
+          colorRange.load("values");
           increaseRange.clear();
           await context.sync();
 
@@ -166,9 +180,19 @@ export async function CreateDynamicChart() {
             tempRange.calculate();
             //await context.sync();
             table.sort.apply([{ key: columnCount, ascending: true }], true);
+
+            // Set data points color
+            let series = chart.series.getItemAt(0);
+            series.load("points");
+            await context.sync();
+            for (let k = 0; k < series.points.count; k++) {
+              series.points.getItemAt(k).format.fill.setSolidColor(colorRange.values[k][0]);
+            }
+
             //console.log("Current Value:" + tempRange.values);
             await context.sync();
             tempRange.load("values");
+            colorRange.load("values");
             await context.sync();
             sleep(interval);
           }
