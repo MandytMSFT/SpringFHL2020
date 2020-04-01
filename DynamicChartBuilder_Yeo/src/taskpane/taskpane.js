@@ -5,11 +5,15 @@
 
 /* global console, document, Excel, Office */
 
+// Parameters. Modify it if needed.
 const chartWidth = 500, chartHeight = 400;
-const countryColumnName = "Countries";
-const tempColumnName = "TempColumn";
+const splitIncreasement = 3;
 const colorList = ["#afc97a","#cd7371","#729aca","#b65708","#276a7c","#4d3b62","#5f7530","#772c2a","#2c4d75","#f79646","#4bacc6","#8064a2","#9bbb59","#c0504d","#4f81bd"];
 const fontSize = 20;
+
+// Internal used const. DO NOT CHANGE
+const tempColumnName = "TempColumn";
+const increaseColumnName = "IncreaseColumn";
 const chartName = "DynamicChart";
 
 let logResult = document.getElementById("consoleText");
@@ -37,12 +41,14 @@ export async function CreateFirstChart() {
       let dataSheet = context.workbook.worksheets.getActiveWorksheet();
       activeTableId = dataTable.id;
       let table = dataSheet.tables.getItem(activeTableId);
-
       table.load("columns");
       await context.sync();
+
+      // Get columns
       let columns = table.columns;
       columnCount = columns.count;
       let tempColumn = columns.getItemOrNullObject(tempColumnName);
+      let increaseColumn = columns.getItemOrNullObject(increaseColumnName);
       await context.sync();
       if (tempColumn.isNullObject) {
           tempColumn = columns.add(null, null, "TempColumn");
@@ -50,9 +56,19 @@ export async function CreateFirstChart() {
       else {
           columnCount -= 1;
       }
+      if (increaseColumn.isNullObject) {
+        increaseColumn = columns.add(null, null, increaseColumnName);
+      } else {
+        columnCount -= 1;
+      }
 
+      // Get ranges
       let tempRange = tempColumn.getDataBodyRange();
-      let countryRange = columns.getItem(countryColumnName).getDataBodyRange();
+      let increaseRange = increaseColumn.getDataBodyRange();
+      let countryRange = columns.getItemAt(0).getDataBodyRange();
+      tempRange.clear();
+      increaseRange.clear();
+      await context.sync();
 
       // Create Chart
       let dataColumn = columns.getItemAt(1); // Use the first data column as starting chart data
@@ -72,10 +88,10 @@ export async function CreateFirstChart() {
       // Set category names
       let categoryAxis = chart.axes.getItem(Excel.ChartAxisType.category);
       categoryAxis.setCategoryNames(countryRange);
-      categoryAxis.visible = false;
+      categoryAxis.set({ visible: true });
       let series = chart.series.getItemAt(0);
       series.set({ hasDataLabels: true, gapWidth: 30 });
-      series.dataLabels.showCategoryName = true;
+      series.dataLabels.showCategoryName = false;
       series.points.load();
       await context.sync();
       //writeLog(series.points.count);
@@ -84,13 +100,13 @@ export async function CreateFirstChart() {
       for (let i = 0; i < series.points.count; i++) {
           series.points.getItemAt(i).format.fill.setSolidColor(colorList[i % colorList.length]);
       }
+      series.points.load();
       await context.sync();
     });
   } 
   catch (error) {
     writeLog(error);
   }
-
 }
 
 export async function CreateDynamicChart() {
@@ -103,7 +119,9 @@ export async function CreateDynamicChart() {
       await context.sync();
       let columns = table.columns;
       let tempColumn = columns.getItemOrNullObject(tempColumnName);
+      let increaseColumn = columns.getItemOrNullObject(increaseColumnName);
       let tempRange = tempColumn.getDataBodyRange();
+      let increaseRange = increaseColumn.getDataBodyRange();
       //tempRange.load("address");
       await context.sync();
       //writeLog("temp range:" + tempRange.address);
@@ -115,20 +133,70 @@ export async function CreateDynamicChart() {
           let dataRange = columns.getItemAt(i).getDataBodyRange();
           let titleRange = columns.getItemAt(i).getHeaderRowRange();
           titleRange.load("text");
-          await context.sync();
-          //chart.title.set({ text: titleRange.text[0][0]});
-          chart.title.text = titleRange.text[0][0];
-          tempRange.copyFrom(dataRange);
-          table.sort.apply([{ key: columnCount, ascending: true }], true);
+          tempRange.load("values");
+          dataRange.load("values");
+          increaseRange.clear();
           await context.sync();
 
-          sleep(interval);
+          // Calculate increase based on current value and next value
+          let increaseData = calculateIncrease(tempRange.values, dataRange.values, splitIncreasement);
+          for (let k = 0; k < increaseData.length; k ++) {
+            increaseRange.getCell(k, 0).values = increaseData[k] | 0;
+          }
+          increaseRange.setDirty();
+          increaseRange.calculate();
+          await context.sync();
+    
+          increaseRange.load("values");
+          await context.sync();
+
+          for (let j = 1; j <= splitIncreasement; j++) {
+            if (j == splitIncreasement) {
+              // Directly use next column data
+              tempRange.copyFrom(dataRange);
+            }
+            else {
+              // Add increase amount
+              for (let k = 0; k < tempRange.values.length; k++) {
+                tempRange.getCell(k, 0).values = tempRange.values[k][0] + increaseRange.values[k][0];
+              }
+            }
+
+            tempRange.setDirty();
+            tempRange.calculate();
+            //await context.sync();
+            table.sort.apply([{ key: columnCount, ascending: true }], true);
+            //console.log("Current Value:" + tempRange.values);
+            await context.sync();
+            tempRange.load("values");
+            await context.sync();
+            sleep(interval);
+          }
+
+          chart.title.text = titleRange.text[0][0];
+          await context.sync();
       }
       await context.sync();
     });
   } catch (error) {
     writeLog(error);
   }
+}
+
+// To calculate the increase for each step between next data list and current data list
+//function calculateIncrease(current: Array<Array<number>>, next: Array<Array<number>>, steps: number) {
+function calculateIncrease(current, next, steps) {
+  if (current.length != next.length) {
+    console.error("Error! current data length:" + current.length + ", next data length" + next.length + ".");
+  }
+
+  let result = new Array(current.length);
+  for (let i = 0; i < current.length; i++) {
+    let increasement = (next[i][0] - current[i][0]) / steps;
+    result[i] = increasement;
+  }
+
+  return result;
 }
 
 function sleep(sleepTime) {
