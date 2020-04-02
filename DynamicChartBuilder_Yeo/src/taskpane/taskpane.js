@@ -9,7 +9,7 @@
 const chartWidth = 500, chartHeight = 400;
 const splitIncreasement = 3;
 const colorList = ["#afc97a","#cd7371","#729aca","#b65708","#276a7c","#4d3b62","#5f7530","#772c2a","#2c4d75","#f79646","#4bacc6","#8064a2","#9bbb59","#c0504d","#4f81bd"];
-const fontSize = 20;
+const fontSize = 36;
 
 // Internal used const. DO NOT CHANGE
 const tempColumnName = "TempColumn";
@@ -20,6 +20,7 @@ const chartName = "DynamicChart";
 let logResult = document.getElementById("consoleText");
 let columnCount = 0;
 let activeTableId;
+let titlePrefix;
 
 Office.onReady(info => {
   if (info.host === Office.HostType.Excel) {
@@ -70,6 +71,7 @@ export async function CreateFirstChart() {
       }
 
       // Get ranges
+      let titleRange = columns.getItemAt(0).getHeaderRowRange();
       let countryRange = columns.getItemAt(0).getDataBodyRange();
       let tempRange = tempColumn.getDataBodyRange();
       let increaseRange = increaseColumn.getDataBodyRange();
@@ -77,6 +79,7 @@ export async function CreateFirstChart() {
       tempRange.clear();
       increaseRange.clear();
       colorRange.load("values");
+      titleRange.load("values");
       await context.sync();
 
       // Create Chart
@@ -90,7 +93,8 @@ export async function CreateFirstChart() {
       await context.sync();
 
       // Set chart tile and style
-      chart.title.text = headerRange.text[0][0];
+      titlePrefix = titleRange.values[0][0];
+      chart.title.text = titlePrefix + " " + headerRange.text[0][0];
       chart.title.format.font.set({size: fontSize});
       chart.legend.set({ visible: false });
 
@@ -100,7 +104,7 @@ export async function CreateFirstChart() {
       categoryAxis.set({ visible: true });
       let series = chart.series.getItemAt(0);
       series.set({ hasDataLabels: true, gapWidth: 30 });
-      series.dataLabels.showCategoryName = false;
+      series.dataLabels.set({ showCategoryName: false, numberFormat: '#,##0' });
       series.points.load();
       await context.sync();
       //writeLog(series.points.count);
@@ -198,7 +202,7 @@ export async function CreateDynamicChart() {
           titleRange.load("text");
           await context.sync();
 
-          chart.title.text = titleRange.text[0][0];
+          chart.title.text = titlePrefix + " " + titleRange.text[0][0];
           await context.sync();
       }
       
