@@ -157,8 +157,6 @@ export async function CreateDynamicChart() {
           increaseRange.setDirty();
           increaseRange.calculate();
           await context.sync();
-    
-
 
           for (let j = 1; j <= splitIncreasement; j++) {
             if (j == splitIncreasement) {
@@ -195,7 +193,6 @@ export async function CreateDynamicChart() {
             await context.sync();
             sleep(interval);
           }
-
           
           let titleRange = columns.getItemAt(i).getHeaderRowRange();
           titleRange.load("text");
@@ -204,7 +201,8 @@ export async function CreateDynamicChart() {
           chart.title.text = titleRange.text[0][0];
           await context.sync();
       }
-
+      
+      let series = chart.series.getItemAt(0);
       colorRange.load("values");
       series.load("points");
       await context.sync();
