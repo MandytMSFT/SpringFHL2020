@@ -6,10 +6,10 @@
 /* global console, document, Excel, Office */
 
 // Parameters. Modify it if needed.
-const chartWidth = 600, chartHeight = 500, chartLeft = 200, chartTop = 100;
-const splitIncreasement = 3;
+const chartWidth = 750, chartHeight = 550, chartLeft = 150, chartTop = 50;
+const splitIncreasement = 2;
 const colorList = ["#afc97a","#cd7371","#729aca","#b65708","#276a7c","#4d3b62","#5f7530","#772c2a","#2c4d75","#f79646","#4bacc6","#8064a2","#9bbb59","#c0504d","#4f81bd"];
-const fontSize_Title = 28, fontSize_CategoryName = 11, fontSize_AxisValue = 10.5;
+const fontSize_Title = 28, fontSize_CategoryName = 13, fontSize_AxisValue = 11, fontSize_DataLabel = 13;
 
 // Internal used const. DO NOT CHANGE
 const tempColumnName = "TempColumn";
@@ -69,6 +69,7 @@ export async function CreateFirstChart() {
       } else {
         columnCount -= 1;
       }
+      await context.sync();
 
       // Get ranges
       let titleRange = columns.getItemAt(0).getHeaderRowRange();
@@ -107,7 +108,8 @@ export async function CreateFirstChart() {
       valueAxis.format.font.set({ size: fontSize_AxisValue });
       let series = chart.series.getItemAt(0);
       series.set({ hasDataLabels: true, gapWidth: 30 });
-      series.dataLabels.set({ showCategoryName: false, numberFormat: '#,##0' });
+      series.dataLabels.set({ showCategoryName: false, numberFormat: '#,##0'});
+      series.dataLabels.format.font.set({ size: fontSize_DataLabel });
       series.points.load();
       await context.sync();
       //writeLog(series.points.count);
