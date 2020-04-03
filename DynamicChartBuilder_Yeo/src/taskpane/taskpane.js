@@ -6,10 +6,10 @@
 /* global console, document, Excel, Office */
 
 // Parameters. Modify it if needed.
-const chartWidth = 500, chartHeight = 400;
+const chartWidth = 600, chartHeight = 500, chartLeft = 200, chartTop = 100;
 const splitIncreasement = 3;
 const colorList = ["#afc97a","#cd7371","#729aca","#b65708","#276a7c","#4d3b62","#5f7530","#772c2a","#2c4d75","#f79646","#4bacc6","#8064a2","#9bbb59","#c0504d","#4f81bd"];
-const fontSize = 36;
+const fontSize_Title = 28, fontSize_CategoryName = 11, fontSize_AxisValue = 10.5;
 
 // Internal used const. DO NOT CHANGE
 const tempColumnName = "TempColumn";
@@ -20,7 +20,7 @@ const chartName = "DynamicChart";
 let logResult = document.getElementById("consoleText");
 let columnCount = 0;
 let activeTableId;
-let titlePrefix;
+let titlePrefix = "";
 
 Office.onReady(info => {
   if (info.host === Office.HostType.Excel) {
@@ -87,7 +87,7 @@ export async function CreateFirstChart() {
       tempRange.copyFrom(dataColumn.getDataBodyRange());
       table.sort.apply([{ key: columnCount, ascending: true }], true);
       let chart = dataSheet.charts.add(Excel.ChartType.barClustered, tempColumn.getRange());
-      chart.set({ name: chartName, height: chartHeight, width: chartWidth });
+      chart.set({ name: chartName, height: chartHeight, width: chartWidth, left: chartLeft, top: chartTop});
       let headerRange = dataColumn.getHeaderRowRange();
       headerRange.load("text");
       await context.sync();
@@ -95,13 +95,16 @@ export async function CreateFirstChart() {
       // Set chart tile and style
       titlePrefix = titleRange.values[0][0];
       chart.title.text = titlePrefix + " " + headerRange.text[0][0];
-      chart.title.format.font.set({size: fontSize});
+      chart.title.format.font.set({size: fontSize_Title});
       chart.legend.set({ visible: false });
 
       // Set category names
       let categoryAxis = chart.axes.getItem(Excel.ChartAxisType.category);
       categoryAxis.setCategoryNames(countryRange);
       categoryAxis.set({ visible: true });
+      categoryAxis.format.font.set({ size: fontSize_CategoryName });
+      let valueAxis = chart.axes.getItem(Excel.ChartAxisType.value);
+      valueAxis.format.font.set({ size: fontSize_AxisValue });
       let series = chart.series.getItemAt(0);
       series.set({ hasDataLabels: true, gapWidth: 30 });
       series.dataLabels.set({ showCategoryName: false, numberFormat: '#,##0' });
